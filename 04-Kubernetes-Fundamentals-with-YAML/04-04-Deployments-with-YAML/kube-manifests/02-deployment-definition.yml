@@ -19,3 +19,26 @@ spec: # Dictionary
           ports: 
             - containerPort: 80  
     
+
+---
+
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: myfirstDeployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp3
+  template:
+    metadata: 
+      name: MyFirstPod
+      labels: 
+        app: myapp3
+    spec:
+      containers: 
+        - name: myfirstContainer
+          image: stacksimplify/kubenginx:3.0.0
+          ports: 
+            - containerPort: 80

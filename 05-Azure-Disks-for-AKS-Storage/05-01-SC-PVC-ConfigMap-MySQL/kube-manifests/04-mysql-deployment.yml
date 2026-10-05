@@ -4,16 +4,18 @@ metadata:
   name: mysql
 spec: 
   replicas: 1
-  selector:
+  selector:     # Pod select label
     matchLabels:
       app: mysql
   strategy:
-    type: Recreate 
+    # Normally we have rolling update deployments but with recreate we kill all the pods b4 creating new one
+    # for db this is recommended --> see the reason belowS
+    type: Recreate
   template: 
     metadata: 
       labels: 
-        app: mysql
-    spec: 
+        app: mysql  # Our pod specific label to be matched with deployment matchLabels 
+    spec:  # Pod specification
       containers:
         - name: mysql
           image: mysql:5.6
@@ -22,16 +24,37 @@ spec:
               value: dbpassword11
           ports:
             - containerPort: 3306
-              name: mysql    
-          volumeMounts:
-            - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql    
-            - name: usermanagement-dbcreation-script
+              name: mysql    # Ref to mysql clusterip service
+          volumeMounts: # Container level resource
+            - name: persistent-disk-storage 
+              mountPath: /var/lib/mysql    # the created volumes we will store at this place
+            - name: mysql-db
               mountPath: /docker-entrypoint-initdb.d #https://hub.docker.com/_/mysql Refer Initializing a fresh instance                                            
-      volumes: 
-        - name: mysql-persistent-storage
+      volumes: # Pod spec level resource
+        - name: persistent-disk-storage
           persistentVolumeClaim:
-            claimName: azure-managed-disk-pvc
-        - name: usermanagement-dbcreation-script
+            claimName: azure-managed-disk-pvc # map the req for pvc to our defined pvc in 02
+        - name: mysql-db
           configMap:
-            name: usermanagement-dbcreation-script
+            name: usermanagement-dbcreation-script  # ref to our 03
+
+
+# With RollingUpdate, you could temporarily have:
+# MySQL 8.0 Pod  ← old
+# MySQL 8.4 Pod  ← new
+
+# Both might try to access the same PersistentVolume.
+# That's problematic because:
+# - The database may not support two instances using the same data directory.
+# - Both instances could try to write to the same files → corruption risk.
+# - The old and new DB versions may have different schema/storage formats.
+# - You don't want two DB instances believing they're the primary database.
+# With Recreate:
+# MySQL 8.0
+#     ❌ stopped
+
+#      ↓
+
+# MySQL 8.4
+#     ✅ started
+#     📦 same PersistentVolume

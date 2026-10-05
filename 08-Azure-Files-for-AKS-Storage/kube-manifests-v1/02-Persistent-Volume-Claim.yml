@@ -4,8 +4,8 @@ metadata:
   name: my-azurefile-pvc
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: my-azurefile-sc
+    - ReadWriteMany # coz it can be read/written from many pods at once
+  storageClassName: my-azurefile-sc # ref to 01
   resources:
     requests:
       storage: 5Gi

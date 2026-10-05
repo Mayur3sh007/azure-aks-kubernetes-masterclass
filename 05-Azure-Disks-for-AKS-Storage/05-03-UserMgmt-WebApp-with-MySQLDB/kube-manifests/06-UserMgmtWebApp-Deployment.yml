@@ -14,7 +14,7 @@ spec:
       labels: 
         app: usermgmt-webapp
     spec:
-      initContainers:
+      initContainers: # runs b4 main container -> this one checks if our mysql at port 3306 is avaialble then only run thee webapp container
         - name: init-db
           image: busybox:1.31
           command: ['sh', '-c', 'echo -e "Checking for the availability of MySQL Server deployment"; while ! nc -z mysql 3306; do sleep 1; printf "-"; done; echo -e "  >> MySQL DB Server has started";']      
@@ -26,7 +26,7 @@ spec:
             - containerPort: 8080           
           env:
             - name: DB_HOSTNAME
-              value: "mysql"            
+              value: "mysql"       # this refers to mysql clusterip (Actually podip) svc in 05     
             - name: DB_PORT
               value: "3306"            
             - name: DB_NAME

@@ -1,3 +1,5 @@
+# AZURE DISKS -> 1 POD CONNECTED TO 1 DISK
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:

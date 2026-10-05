@@ -1,11 +1,68 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: azure-managed-disk-pvc
+  name: azure-managed-disk-pvc # This is to be referenced in the Deployment for the creating a volume
 spec:
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteOnce # can be accessed by 1 pod only
   storageClassName: managed-premium-retain-sc
   resources:
     requests:
       storage: 5Gi      
+
+
+# 1. ReadWriteOnce — RWO
+# accessModes:
+#   - ReadWriteOnce
+
+# Multiple Pods on the same node can potentially use the volume, but the volume is attached for read/write to one node.
+# For example:
+# Node 1
+#  ├── Pod A ──┐
+#  └── Pod B ──┴── Azure Disk
+
+# But you generally can't have:
+# Node 1 ── Azure Disk
+# Node 2 ── Azure Disk   ❌
+
+# This is the common mode for Azure Managed Disks.
+# 2. ReadOnlyMany — ROX
+# accessModes:
+#   - ReadOnlyMany
+
+# Multiple nodes can mount the volume, but nobody can write to it.
+# Node 1 ──┐
+# Node 2 ──┼── 📦 Volume (READ ONLY)
+# Node 3 ──┘
+
+# Useful when you have shared static data that many Pods need to read.
+# 3. ReadWriteMany — RWX
+# accessModes:
+#   - ReadWriteMany
+
+# Multiple nodes can mount it and write to it.
+# Node 1 ──┐
+# Node 2 ──┼── 📦 Shared Volume
+# Node 3 ──┘
+#           ↕
+#        Read/Write
+
+# This is what you'd want for something like:
+# Pod A ──┐
+# Pod B ──┼── shared files
+# Pod C ──┘
+
+# But here's the catch: Azure Managed Disk generally isn't the storage solution you'd use for RWX. For Azure, you'd typically look at Azure Files for shared read/write storage.
+# 4. ReadWriteOncePod — RWOP
+# accessModes:
+#   - ReadWriteOncePod
+
+# This is stricter than RWO:
+# The volume can be mounted read-write by only one Pod across the cluster.
+
+# So:
+# Pod A ── 📦 Volume ✅
+
+# Pod B ── 📦 Volume ❌
+
+# Even if Pod A and Pod B are on the same node, only Pod A can use it.

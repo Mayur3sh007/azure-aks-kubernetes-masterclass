@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: usermanagement-dbcreation-script
+  name: usermanagement-dbcreation-script  # This is to be referenced in the Deployment for the creating a volume
 data: 
   mysql_usermgmt.sql: |-
     DROP DATABASE IF EXISTS webappdb;

@@ -12,4 +12,23 @@ spec:
         - containerPort: 80
 
 
-    
+--- 
+
+apiVersion: V1
+kind: Pod
+metadata: 
+  name: Mypod
+  labels: 
+    app: myapp
+spec:
+  containers:
+    - name: firstContainer
+      image: stacksimplify/kubenginx:1.0.0
+      ports: 
+        - containerPort: 80
+          containerPort: 90
+    - name: secondContainer
+      image: stacksimplify/kubenginx:2.0.0
+      ports:
+        - containerPort: 100
+          containerPort: 110

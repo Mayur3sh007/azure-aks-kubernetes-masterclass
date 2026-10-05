@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql
+  name: mysql # Whenever the svc named mysql is to reached out in our system it'll forward the request to the externalName svc
 spec:
   type: ExternalName
   externalName: akswebappdb201.mysql.database.azure.com

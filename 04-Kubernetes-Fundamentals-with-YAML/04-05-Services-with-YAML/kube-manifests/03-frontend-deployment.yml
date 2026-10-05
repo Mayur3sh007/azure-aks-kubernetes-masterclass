@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment 
 metadata:
   name: frontend-nginxapp
+  #Optional
   labels:
     app: frontend-nginxapp
     tier: frontend
@@ -9,11 +10,11 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: frontend-nginxapp
+      app: frontend-nginxapp # To identify the pods below this frontend deployment
   template: 
     metadata:
       labels: 
-        app: frontend-nginxapp
+        app: frontend-nginxapp  # same as matchlables
         tier: frontend
     spec: 
       containers: 
